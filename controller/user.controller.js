@@ -1,9 +1,11 @@
-const bcrypt = require('bcrypt');
+// const bcrypt = require('bcrypt');
+var bcrypt = require('bcryptjs');
 
 const User = require('../model/User');
 const saltRounds = 10;
 
 const userController = {};
+const { ObjectId } = require('mongoose').Types;
 
 userController.createUser = async (req, res)=>{
     try{
@@ -22,7 +24,7 @@ userController.createUser = async (req, res)=>{
 
         // console.log("hash :", hash);
     }catch(err){
-        res.status(400).json({status:"error",error:err});
+        res.status(400).json({status:"error",error:err.message});
     }
 }
 
@@ -39,9 +41,24 @@ userController.loginWithEmail = async (req,res) =>{
                 return res.status(200).json({status:"success",user, token});
             }
         }
+        // res.send(email,password,user.password)
         throw new Error("아이디 또는 비밀번호가 일치하지 않습니다.");
     }catch(error){
-        res.status(400).json({status:"fail",error : error.message});
+        res.status(400).json({status:"fail",message : error.message});
+    }
+}
+
+userController.getUser = async (req,res) =>{
+    try{
+        const {userId} = req;
+        const user = await User.findById(userId);
+        if (!user){
+            throw new Error("cannot find user");
+        }
+        res.status(200).json({status:"success",user});
+
+    }catch(error){
+        res.status(400).json({status:"fail",message : error.message});
     }
 }
 module.exports = userController;
